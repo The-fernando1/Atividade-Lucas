@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Desafio - Carrinho de Compras</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        font-family: Helvetica;
+        padding: 20px 0;
+      }
+
+      .container {
+        display: flex;
+        justify-content: center;
+        column-gap: 100px;
+        width: 1024px;
+      }
+
+      h3 {
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+      }
+
+      h2 {
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+      }
+
+      p,
+      span,
+      a {
+        font-size: 0.8rem;
+      }
+
+      .carrinho {
+        display: flex;
+        flex-direction: column;
+        width: 60%;
+      }
+
+      .item {
+        display: flex;
+        column-gap: 20px;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        padding: 20px 5px;
+        width: 100%;
+        border-bottom: 1px solid #ccc;
+      }
+
+      .item img {
+        min-width: 100px;
+        max-height: 100px;
+        border-radius: 0.5rem;
+        object-fit: contain;
+      }
+
+      .item-info {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        width: 100%;
+        height: 100%;
+      }
+
+      .acoes {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        row-gap: 10px;
+      }
+
+      input[type="number"] {
+        width: 6ch;
+      }
+
+      .total-item {
+        width: 30%;
+        font-weight: bold;
+      }
+
+      .subtotal-carrinho p {
+        text-align: right;
+        font-size: 0.9rem;
+      }
+
+      .subtotal-carrinho span {
+        font-weight: bold;
+      }
+
+      .resumo {
+        display: flex;
+        flex-direction: column;
+        row-gap: 10px;
+      }
+
+      .resumo > * {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .resumo span {
+        font-weight: bold;
+      }
+
+      .total-carrinho {
+        font-size: 1rem;
+        font-weight: bold;
+        margin-top: 40px;
+      }
+
+      .total-carrinho > span {
+        font-size: 1rem;
+      }
+
+      .resumo button {
+        all: unset;
+        text-align: center;
+        padding: 8px 16px;
+        height: 40px;
+        font-size: 0.9rem;
+        background-color: dodgerblue;
+        margin-top: 20px;
+        border-radius: 0.5rem;
+        color: #fcfcfc;
+        font-weight: bold;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="carrinho"></div>
+
+      <div class="resumo">
+        <h2>Resumo da compra</h2>
+        <p>Produtos: <span id="subtotal">R$ 0.00</span></p>
+        <p>Descontos: <span>R$ 0.00</span></p>
+        <p>Frete: <span id="frete">R$ 0.00</span></p>
+        <p class="total-carrinho">Total: <span id="total">R$ ---,--</span></p>
+        <button id="btnCalcular">Calcular Total</button>
+      </div>
+    </div>
+
+    <script>
+      // JavaScript
+      const carrinho = [
+        {
+          id: 1,
+          nome: "Livro: JavaScript: O Guia Definitivo",
+          urlImg:
+            "https://m.media-amazon.com/images/I/91z1xY4ppaL._SL1500_.jpg",
+          preco: 350,
+          qtd: 1,
+        },
+        {
+          id: 2,
+          nome: "Echo Pop | Smart speaker",
+          urlImg:
+            "https://m.media-amazon.com/images/I/71eWKwcVjnL._AC_SL1500_.jpg",
+          preco: 242.1,
+          qtd: 1,
+        },
+        {
+          id: 3,
+          nome: "Fire TV Stick Lite",
+          urlImg:
+            "https://m.media-amazon.com/images/I/41XUvigLn0L._AC_SL1000_.jpg",
+          preco: 224.1,
+          qtd: 1,
+        },
+      ];
+
+      let desconto = 0.1;
+      let frete = 120;
+
+      const calcularSubTotal = (carrinho) => {
+        const itensCarrinho = [...carrinho];
+        let subTotal = itensCarrinho.reduce(
+          (acc, { preco, qtd }) => acc + preco * qtd,
+          0
+        );
+        return subTotal;
+      };
+
+      const calcularTotal = (carrinho, frete, desconto) => {
+        const subTotal = calcularSubTotal(carrinho);
+        const totalSemFrete = subTotal * (1 - desconto);
+        const totalComFrete = totalSemFrete + frete;
+        return totalComFrete.toFixed(2);
+      };
+
+      const renderizarCarrinho = (produtos) => {
+        let templateCarrinho = `<h2>Carrinho de Compras</h2>`;
+
+        produtos.map((produto) => {
+          templateCarrinho += `<div class="item" id="item-${produto.id}">
+                    <img src="${produto.urlImg}" alt="">
+                    <div class="item-info">
+                        <h3>${produto.nome}</h3>
+                        <div class="acoes">
+                            <form>
+                                <label>
+                                    <span>Qtd: </span>
+                                    <input type="number" min="1" value="${
+                                      produto.qtd
+                                    }" id="qtd-${produto.id}">
+                                </label>
+                            </form>
+                            <div class="links">
+                                <button onclick="atualizarQuantidade(${
+                                  produto.id
+                                })">Atualizar</button>
+                                <a href="#">Excluir</a>
+                                <a href="#">Compartilhar</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="total-item">
+                        <span id="total-${produto.id}">R$ ${(
+            produto.qtd * produto.preco
+          ).toFixed(2)}</span>
+                    </div>
+                </div>`;
+        });
+
+        const subtotal = calcularSubTotal(produtos);
+        const total = calcularTotal(produtos, frete, desconto);
+
+        document.getElementById(
+          "subtotal"
+        ).textContent = `R$ ${subtotal.toFixed(2)}`;
+        document.getElementById("total").textContent = `R$ ${total}`;
+
+        templateCarrinho += `<div class="subtotal-carrinho">
+                <p>Subtotal do carrinho: <span>R$ ${subtotal.toFixed(
+                  2
+                )}</span></p>
+                <p>Frete: <span>R$ ${frete.toFixed(2)}</span></p>
+                <p>Desconto: <span>R$ ${(subtotal * desconto).toFixed(
+                  2
+                )}</span></p>
+                <p>Total: <span>R$ ${total}</span></p>
+            </div>`;
+
+        const carrinho = document.querySelector(".carrinho");
+        carrinho.innerHTML = templateCarrinho;
+      };
+
+      renderizarCarrinho(carrinho);
+
+      // Função para atualizar a quantidade de um produto
+      const atualizarQuantidade = (produtoId) => {
+        const qtdInput = document.getElementById(`qtd-${produtoId}`);
+        const novaQuantidade = parseInt(qtdInput.value);
+        const produto = carrinho.find((item) => item.id === produtoId);
+        produto.qtd = novaQuantidade;
+        renderizarCarrinho(carrinho);
+      };
+
+      // Event listener para o botão de calcular total
+      document.getElementById("btnCalcular").addEventListener("click", () => {
+        const total = calcularTotal(carrinho, frete, desconto);
+        document.querySelector(
+          ".total-carrinho span"
+        ).textContent = `R$ ${total}`;
+      });
+    </script>
+  </body>
+</html>
